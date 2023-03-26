@@ -190,24 +190,25 @@ const catPost = async (
       throw new CustomError(messages, 400);
     }
 
+    console.log('req.body: ', req.body);
+    console.log('req.body.owner: ', (req.user as User)._id);
+
     if (!req.file) {
       const err = new CustomError('file not valid', 400);
       throw err;
     }
 
-    const cat = req.body;
-    cat.owner = (req.user as User)._id;
-    cat.filename = req.file.filename;
+    const cat2 = req.body;
+    cat2.owner = (req.user as User)._id;
+    cat2.filename = req.file.filename;
+    cat2.location = res.locals.coords[0];
 
-    const result = await catModel.create(cat);
-    await result.populate('owner');
-    console.log('req.body2', result);
-
+    const cat = await catModel.create(cat2);
+    await cat.populate({path: 'user'});
     const output: DBMessageResponse = {
-      message: 'cat created',
-      data: result,
+      message: 'Cat created',
+      data: cat,
     };
-
     res.json(output);
   } catch (error) {
     next(new CustomError((error as Error).message, 500));
