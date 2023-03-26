@@ -7,7 +7,7 @@ interface Cat extends Document {
   weight: number;
   filename: string;
   birthdate: Date;
-  coords: Point;
+  location: Point;
   owner: Types.ObjectId;
 }
 
@@ -16,7 +16,7 @@ interface CatTest {
   weight?: number;
   filename?: string;
   birthdate?: Date;
-  coords?: Point;
+  location?: Point;
   owner?: Types.ObjectId;
 }
 
