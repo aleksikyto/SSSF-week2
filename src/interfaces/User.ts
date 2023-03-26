@@ -9,6 +9,7 @@ interface User extends Document {
 }
 
 interface UserOutput {
+  _id?: string;
   user_name: string;
   email: string;
 }
@@ -18,6 +19,14 @@ interface UserTest {
   user_name?: string;
   email?: string;
   role?: string;
+  password?: string;
 }
 
-export {User, UserOutput, UserTest};
+interface LoginUser {
+  user_name: string;
+  email: string;
+  role: string;
+  password: string;
+}
+
+export {User, UserOutput, UserTest, LoginUser};

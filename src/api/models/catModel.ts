@@ -1,12 +1,12 @@
 import mongoose from 'mongoose';
 import {Cat} from '../../interfaces/Cat';
 
-const catSchema = new mongoose.Schema({
+const catSchema = new mongoose.Schema<Cat>({
   cat_name: {type: String, minlength: 2, required: true},
   weight: {type: Number, required: true},
   filename: {type: String, required: true},
   birthdate: {type: Date, required: true},
-  coords: {
+  location: {
     type: {
       type: String,
       enum: ['Point'],

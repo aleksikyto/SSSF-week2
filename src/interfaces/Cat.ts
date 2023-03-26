@@ -12,6 +12,7 @@ interface Cat extends Document {
 }
 
 interface CatTest {
+  _id?: string;
   cat_name?: string;
   weight?: number;
   filename?: string;

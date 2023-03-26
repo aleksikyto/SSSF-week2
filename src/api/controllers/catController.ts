@@ -5,6 +5,7 @@ import {validationResult} from 'express-validator';
 import CustomError from '../../classes/CustomError';
 import rectangleBounds from '../../utils/rectangleBounds';
 import {Cat} from '../../interfaces/Cat';
+import {User} from '../../interfaces/User';
 
 // TODO: create following functions:
 // - catGetByUser - get all cats by current user id
@@ -22,7 +23,7 @@ const catGetByUser = async (
         .join(', ');
       throw new CustomError(messages, 400);
     }
-    const cat = await catModel.find().populate('user').findById(req.params.id);
+    const cat = await catModel.find().populate('owner').findById(req.params.id);
     if (!cat) {
       next(new CustomError('No cat found', 404));
       return;
@@ -73,8 +74,20 @@ const catGetByBoundingBox = async (
     next(new CustomError((error as Error).message, 500));
   }
 };
+
 // - catPutAdmin - only admin can change cat owner
+const catPutAdmin = async (
+  req: Request<{id: string}, {}, {user: string}>,
+  res: Response,
+  next: NextFunction
+) => {};
+
 // - catDeleteAdmin - only admin can delete cat
+const catDeleteAdmin = async (
+  req: Request<{id: string}>,
+  res: Response,
+  next: NextFunction
+) => {};
 
 // - catDelete - only owner can delete cat
 const catDelete = async (req: Request, res: Response, next: NextFunction) => {
@@ -90,7 +103,7 @@ const catDelete = async (req: Request, res: Response, next: NextFunction) => {
 
     const cat = await catModel
       .findByIdAndDelete(req.params.id)
-      .populate('user');
+      .populate('owner');
     if (!cat) {
       next(new CustomError('No cat found', 404));
       return;
@@ -106,6 +119,24 @@ const catDelete = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 // - catPut - only owner can update cat
+const catPut = async (
+  req: Request<{id: string}, {}, Cat>,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      const messages = errors
+        .array()
+        .map((error) => `${error.msg}: ${error.param}`)
+        .join(', ');
+      throw new CustomError(messages, 400);
+    }
+  } catch (error) {
+    next(new CustomError((error as Error).message, 500));
+  }
+};
 
 // - catGet - get cat by id
 const catGet = async (req: Request, res: Response, next: NextFunction) => {
@@ -118,7 +149,7 @@ const catGet = async (req: Request, res: Response, next: NextFunction) => {
         .join(', ');
       throw new CustomError(messages, 400);
     }
-    const cat = await catModel.findById(req.params.id).populate('user');
+    const cat = await catModel.findById(req.params.id).populate('owner');
     if (!cat) {
       next(new CustomError('No cat found', 404));
       return;
@@ -132,7 +163,7 @@ const catGet = async (req: Request, res: Response, next: NextFunction) => {
 // - catListGet - get all cats
 const catListGet = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const cat = await catModel.find().populate('user');
+    const cat = await catModel.find().populate('owner');
     if (!cat) {
       next(new CustomError('No cat found', 404));
       return;
@@ -159,8 +190,18 @@ const catPost = async (
       throw new CustomError(messages, 400);
     }
 
-    const result = await catModel.create(req.body);
-    await result.populate('user');
+    if (!req.file) {
+      const err = new CustomError('file not valid', 400);
+      throw err;
+    }
+
+    const cat = req.body;
+    cat.owner = (req.user as User)._id;
+    cat.filename = req.file.filename;
+
+    const result = await catModel.create(cat);
+    await result.populate('owner');
+    console.log('req.body2', result);
 
     const output: DBMessageResponse = {
       message: 'cat created',
@@ -180,4 +221,7 @@ export {
   catGet,
   catListGet,
   catPost,
+  catPut,
+  catPutAdmin,
+  catDeleteAdmin,
 };

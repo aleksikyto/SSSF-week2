@@ -3,7 +3,7 @@ import {User} from '../../interfaces/User';
 
 const userSchema = new mongoose.Schema({
   user_name: {type: String, minlength: 2, required: true},
-  email: {type: String, minlength: 2, required: true},
+  email: {type: String, minlength: 2, required: true, unique: true},
   role: {type: String, minlength: 1, required: true},
   password: {type: String, minlength: 1, required: true},
 });
